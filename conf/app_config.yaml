@@ -1,0 +1,50 @@
+# 日志配置
+logging:
+  file:
+    enable: true
+    level: INFO
+    path: logs
+    rotation: "10 MB"
+    retention: "7 days"
+  console:
+    enable: true
+    level: INFO
+
+# 数据库meta的配置
+db_meta:
+  host: ${oc.env:INSIGHTQUERY_DB_HOST,localhost}
+  port: ${oc.env:INSIGHTQUERY_DB_PORT,3307}
+  user: ${oc.env:INSIGHTQUERY_DB_USER,atguigu}
+  password: ${oc.env:INSIGHTQUERY_DB_PASSWORD}
+  database: ${oc.env:INSIGHTQUERY_META_DATABASE,meta2}
+
+# 数据库dw的配置
+db_dw:
+  host: ${oc.env:INSIGHTQUERY_DB_HOST,localhost}
+  port: ${oc.env:INSIGHTQUERY_DB_PORT,3307}
+  user: ${oc.env:INSIGHTQUERY_DB_USER,atguigu}
+  password: ${oc.env:INSIGHTQUERY_DB_PASSWORD}
+  database: ${oc.env:INSIGHTQUERY_DW_DATABASE,dw2}
+
+# qdrant的配置
+qdrant:
+  host: ${oc.env:INSIGHTQUERY_QDRANT_HOST,127.0.0.1}
+  port: ${oc.env:INSIGHTQUERY_QDRANT_PORT,6333}
+  embedding_size: 1024
+
+# embedding的配置
+embedding:
+  host: ${oc.env:INSIGHTQUERY_EMBEDDING_HOST,localhost}
+  port: ${oc.env:INSIGHTQUERY_EMBEDDING_PORT,8081}
+  model: BAAI/bge-large-zh-v1.5
+
+# es的配置
+es:
+  host: ${oc.env:INSIGHTQUERY_ES_HOST,localhost}
+  port: ${oc.env:INSIGHTQUERY_ES_PORT,9200}
+  index_name: data_agent
+
+# llm的配置
+llm:
+  model_name: ${oc.env:INSIGHTQUERY_LLM_MODEL_NAME,deepseek-v4-flash}
+  api_key: ${oc.env:INSIGHTQUERY_LLM_API_KEY}

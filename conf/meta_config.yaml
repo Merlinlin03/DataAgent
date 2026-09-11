@@ -1,0 +1,486 @@
+# 海外 AI App 运营问数系统元数据配置
+# 用于同步到 meta 数据库、构建字段向量索引和指标知识库。
+tables:
+  - name: dim_date
+    role: dim
+    description: 日期维度表，用于按日、周、月、季度分析海外 AI App 运营指标。
+    columns:
+      - name: date_id
+        role: primary_key
+        description: 日期唯一标识，格式 yyyyMMdd。
+        alias: [日期ID, 统计日期ID]
+        sync: false
+      - name: date_value
+        role: dimension
+        description: 自然日期，格式 yyyy-MM-dd。
+        alias: [日期, 统计日期, 自然日]
+        sync: true
+      - name: week_of_year
+        role: dimension
+        description: 一年中的周序号，用于周粒度趋势分析。
+        alias: [周, 周序号, 第几周]
+        sync: true
+      - name: month
+        role: dimension
+        description: 月份，格式 yyyy-MM。
+        alias: [月份, 月, 统计月份]
+        sync: true
+      - name: quarter
+        role: dimension
+        description: 季度，格式 yyyy-Qn。
+        alias: [季度, 统计季度]
+        sync: true
+
+  - name: dim_country
+    role: dim
+    description: 国家与区域维度表，用于分析海外市场、语言和地区表现。
+    columns:
+      - name: country_id
+        role: primary_key
+        description: 国家唯一标识。
+        alias: [国家ID, 市场ID]
+        sync: false
+      - name: country_name
+        role: dimension
+        description: 国家或市场名称。
+        alias: [国家, 市场, 海外市场]
+        sync: true
+      - name: region
+        role: dimension
+        description: 国家所属大区，如 North America、Europe、LATAM、APAC。
+        alias: [区域, 大区, 海外区域]
+        sync: true
+      - name: primary_language
+        role: dimension
+        description: 该市场主要语言。
+        alias: [语言, 主要语言, 本地化语言]
+        sync: true
+      - name: tier
+        role: dimension
+        description: 市场分层，用于区分核心市场、增长市场和观察市场。
+        alias: [市场层级, 国家分层, 市场等级]
+        sync: true
+
+  - name: dim_channel
+    role: dim
+    description: 获客渠道维度表，用于分析自然流量、广告投放和应用商店搜索效果。
+    columns:
+      - name: channel_id
+        role: primary_key
+        description: 渠道唯一标识。
+        alias: [渠道ID, 来源ID]
+        sync: false
+      - name: channel_name
+        role: dimension
+        description: 获客渠道名称。
+        alias: [渠道, 来源, 投放渠道, 获客渠道]
+        sync: true
+      - name: channel_type
+        role: dimension
+        description: 渠道类型，如 Paid、Organic、Store Search、Referral。
+        alias: [渠道类型, 流量类型, 来源类型]
+        sync: true
+
+  - name: dim_app_version
+    role: dim
+    description: App 版本维度表，用于分析版本发布后的活跃、留存、崩溃和评分变化。
+    columns:
+      - name: version_id
+        role: primary_key
+        description: 版本唯一标识。
+        alias: [版本ID]
+        sync: false
+      - name: version_name
+        role: dimension
+        description: App 版本号。
+        alias: [版本, 版本号, App版本]
+        sync: true
+      - name: platform
+        role: dimension
+        description: App 运行平台，如 iOS 或 Android。
+        alias: [平台, 系统, 设备平台]
+        sync: true
+      - name: release_date
+        role: dimension
+        description: 版本发布日期。
+        alias: [发布日期, 上线日期, 发版日期]
+        sync: true
+
+  - name: dim_product
+    role: dim
+    description: AI 产品线维度表，用于区分 AI Chat、AI Image、AI Writer 等海外产品模块。
+    columns:
+      - name: product_id
+        role: primary_key
+        description: 产品线唯一标识。
+        alias: [产品ID, 产品线ID]
+        sync: false
+      - name: product_name
+        role: dimension
+        description: AI 产品线名称。
+        alias: [产品, 产品线, AI产品]
+        sync: true
+      - name: product_category
+        role: dimension
+        description: 产品类别，如 Chatbot、Image Generator、Writing Assistant。
+        alias: [产品类别, AI能力, 产品类型]
+        sync: true
+
+  - name: fact_user_activity_daily
+    role: fact
+    description: 用户活跃事实表，按日期、国家、渠道、版本和产品线记录活跃、新增、留存与会话数据。
+    columns:
+      - name: activity_id
+        role: primary_key
+        description: 活跃事实记录唯一标识。
+        alias: [活跃记录ID]
+        sync: false
+      - name: date_id
+        role: foreign_key
+        description: 关联日期维度的外键。
+        alias: [日期ID, 统计日期ID]
+        sync: false
+      - name: country_id
+        role: foreign_key
+        description: 关联国家维度的外键。
+        alias: [国家ID, 市场ID]
+        sync: false
+      - name: channel_id
+        role: foreign_key
+        description: 关联渠道维度的外键。
+        alias: [渠道ID, 来源ID]
+        sync: false
+      - name: version_id
+        role: foreign_key
+        description: 关联 App 版本维度的外键。
+        alias: [版本ID]
+        sync: false
+      - name: product_id
+        role: foreign_key
+        description: 关联 AI 产品线维度的外键。
+        alias: [产品ID, 产品线ID]
+        sync: false
+      - name: dau
+        role: measure
+        description: 当日活跃用户数。
+        alias: [DAU, 日活, 日活跃用户数, 活跃用户]
+        sync: false
+      - name: new_users
+        role: measure
+        description: 当日新增用户数。
+        alias: [新增用户, 新用户, 新增]
+        sync: false
+      - name: retained_d1_users
+        role: measure
+        description: 次日留存用户数，分母通常为对应新增用户数。
+        alias: [次日留存用户, D1留存用户]
+        sync: false
+      - name: retained_d7_users
+        role: measure
+        description: 7 日留存用户数，分母通常为对应新增用户数。
+        alias: [7日留存用户, D7留存用户]
+        sync: false
+      - name: sessions
+        role: measure
+        description: 当日会话次数。
+        alias: [会话数, 使用次数, session]
+        sync: false
+
+  - name: fact_subscription_daily
+    role: fact
+    description: 订阅转化事实表，按日期、国家、渠道、版本和产品线记录试用、付费、续费、退款和订阅收入。
+    columns:
+      - name: subscription_id
+        role: primary_key
+        description: 订阅事实记录唯一标识。
+        alias: [订阅记录ID]
+        sync: false
+      - name: date_id
+        role: foreign_key
+        description: 关联日期维度的外键。
+        alias: [日期ID, 统计日期ID]
+        sync: false
+      - name: country_id
+        role: foreign_key
+        description: 关联国家维度的外键。
+        alias: [国家ID, 市场ID]
+        sync: false
+      - name: channel_id
+        role: foreign_key
+        description: 关联渠道维度的外键。
+        alias: [渠道ID, 来源ID]
+        sync: false
+      - name: version_id
+        role: foreign_key
+        description: 关联 App 版本维度的外键。
+        alias: [版本ID]
+        sync: false
+      - name: product_id
+        role: foreign_key
+        description: 关联 AI 产品线维度的外键。
+        alias: [产品ID, 产品线ID]
+        sync: false
+      - name: trial_users
+        role: measure
+        description: 当日进入免费试用的用户数。
+        alias: [试用用户, 免费试用, trial]
+        sync: false
+      - name: paid_subscribers
+        role: measure
+        description: 当日新增付费订阅用户数。
+        alias: [付费订阅用户, 订阅用户, 付费用户]
+        sync: false
+      - name: renewed_subscribers
+        role: measure
+        description: 当日续费订阅用户数。
+        alias: [续费用户, 续订用户]
+        sync: false
+      - name: refunded_subscribers
+        role: measure
+        description: 当日退款订阅用户数。
+        alias: [退款用户, 订阅退款]
+        sync: false
+      - name: subscription_revenue
+        role: measure
+        description: 当日订阅收入，单位美元。
+        alias: [订阅收入, 付费收入, MRR, revenue]
+        sync: false
+
+  - name: fact_ad_revenue_daily
+    role: fact
+    description: 广告变现事实表，按日期、国家、渠道、版本和产品线记录广告展示、点击、eCPM 和广告收入。
+    columns:
+      - name: ad_id
+        role: primary_key
+        description: 广告事实记录唯一标识。
+        alias: [广告记录ID]
+        sync: false
+      - name: date_id
+        role: foreign_key
+        description: 关联日期维度的外键。
+        alias: [日期ID, 统计日期ID]
+        sync: false
+      - name: country_id
+        role: foreign_key
+        description: 关联国家维度的外键。
+        alias: [国家ID, 市场ID]
+        sync: false
+      - name: channel_id
+        role: foreign_key
+        description: 关联渠道维度的外键。
+        alias: [渠道ID, 来源ID]
+        sync: false
+      - name: version_id
+        role: foreign_key
+        description: 关联 App 版本维度的外键。
+        alias: [版本ID]
+        sync: false
+      - name: product_id
+        role: foreign_key
+        description: 关联 AI 产品线维度的外键。
+        alias: [产品ID, 产品线ID]
+        sync: false
+      - name: ad_impressions
+        role: measure
+        description: 广告展示次数。
+        alias: [广告展示, 展示次数, impressions]
+        sync: false
+      - name: ad_clicks
+        role: measure
+        description: 广告点击次数。
+        alias: [广告点击, 点击次数, clicks]
+        sync: false
+      - name: ad_revenue
+        role: measure
+        description: 广告收入，单位美元。
+        alias: [广告收入, 广告变现, ad revenue]
+        sync: false
+      - name: ecpm
+        role: measure
+        description: 每千次广告展示收入，单位美元。
+        alias: [eCPM, 千次展示收入]
+        sync: false
+
+  - name: fact_app_quality_daily
+    role: fact
+    description: App 质量事实表，按日期、国家、版本和产品线记录崩溃、错误和启动性能。
+    columns:
+      - name: quality_id
+        role: primary_key
+        description: 质量事实记录唯一标识。
+        alias: [质量记录ID]
+        sync: false
+      - name: date_id
+        role: foreign_key
+        description: 关联日期维度的外键。
+        alias: [日期ID, 统计日期ID]
+        sync: false
+      - name: country_id
+        role: foreign_key
+        description: 关联国家维度的外键。
+        alias: [国家ID, 市场ID]
+        sync: false
+      - name: version_id
+        role: foreign_key
+        description: 关联 App 版本维度的外键。
+        alias: [版本ID]
+        sync: false
+      - name: product_id
+        role: foreign_key
+        description: 关联 AI 产品线维度的外键。
+        alias: [产品ID, 产品线ID]
+        sync: false
+      - name: total_sessions
+        role: measure
+        description: 用于质量统计的总会话数。
+        alias: [总会话数, 质量统计会话]
+        sync: false
+      - name: crash_sessions
+        role: measure
+        description: 发生崩溃的会话数。
+        alias: [崩溃会话, crash sessions]
+        sync: false
+      - name: error_count
+        role: measure
+        description: 客户端或服务端错误次数。
+        alias: [错误数, 异常数]
+        sync: false
+      - name: avg_startup_ms
+        role: measure
+        description: 平均启动耗时，单位毫秒。
+        alias: [启动耗时, 平均启动耗时]
+        sync: false
+
+  - name: fact_store_review_daily
+    role: fact
+    description: 应用商店评论事实表，按日期、国家、版本、平台和产品线记录评分、评论量和差评量。
+    columns:
+      - name: review_id
+        role: primary_key
+        description: 评论事实记录唯一标识。
+        alias: [评论记录ID]
+        sync: false
+      - name: date_id
+        role: foreign_key
+        description: 关联日期维度的外键。
+        alias: [日期ID, 统计日期ID]
+        sync: false
+      - name: country_id
+        role: foreign_key
+        description: 关联国家维度的外键。
+        alias: [国家ID, 市场ID]
+        sync: false
+      - name: version_id
+        role: foreign_key
+        description: 关联 App 版本维度的外键。
+        alias: [版本ID]
+        sync: false
+      - name: product_id
+        role: foreign_key
+        description: 关联 AI 产品线维度的外键。
+        alias: [产品ID, 产品线ID]
+        sync: false
+      - name: review_count
+        role: measure
+        description: 应用商店评论数量。
+        alias: [评论量, 评价数, review count]
+        sync: false
+      - name: bad_review_count
+        role: measure
+        description: 1 星和 2 星差评数量。
+        alias: [差评数, 低分评论, 负面评论]
+        sync: false
+      - name: rating_sum
+        role: measure
+        description: 评论评分总和，用于计算平均评分。
+        alias: [评分总和]
+        sync: false
+
+metrics:
+  - name: DAU
+    description: Daily Active Users，日活跃用户数，口径为 sum(fact_user_activity_daily.dau)。
+    relevant_columns:
+      - fact_user_activity_daily.dau
+    alias: [日活, 日活跃用户, 活跃用户数]
+  - name: New Users
+    description: 新增用户数，口径为 sum(fact_user_activity_daily.new_users)。
+    relevant_columns:
+      - fact_user_activity_daily.new_users
+    alias: [新增用户, 新用户, 拉新用户]
+  - name: D1 Retention Rate
+    description: 次日留存率，口径为 sum(retained_d1_users) / nullif(sum(new_users), 0)。
+    relevant_columns:
+      - fact_user_activity_daily.retained_d1_users
+      - fact_user_activity_daily.new_users
+    alias: [次日留存率, D1留存, D1 Retention]
+  - name: D7 Retention Rate
+    description: 7日留存率，口径为 sum(retained_d7_users) / nullif(sum(new_users), 0)。
+    relevant_columns:
+      - fact_user_activity_daily.retained_d7_users
+      - fact_user_activity_daily.new_users
+    alias: [7日留存率, D7留存, D7 Retention]
+  - name: Trial Conversion Rate
+    description: 试用转化率，口径为 sum(trial_users) / nullif(sum(new_users), 0)，用于衡量新增用户进入免费试用的比例。
+    relevant_columns:
+      - fact_subscription_daily.trial_users
+      - fact_user_activity_daily.new_users
+    alias: [试用转化率, trial conversion, 免费试用转化]
+  - name: Paid Conversion Rate
+    description: 付费转化率，口径为 sum(paid_subscribers) / nullif(sum(trial_users), 0)，用于衡量试用用户转为付费订阅的比例。
+    relevant_columns:
+      - fact_subscription_daily.paid_subscribers
+      - fact_subscription_daily.trial_users
+    alias: [付费转化率, 订阅转化率, paid conversion]
+  - name: Subscription Revenue
+    description: 订阅收入，口径为 sum(fact_subscription_daily.subscription_revenue)，单位美元。
+    relevant_columns:
+      - fact_subscription_daily.subscription_revenue
+    alias: [订阅收入, 付费收入, MRR]
+  - name: Refund Rate
+    description: 退款率，口径为 sum(refunded_subscribers) / nullif(sum(paid_subscribers), 0)。
+    relevant_columns:
+      - fact_subscription_daily.refunded_subscribers
+      - fact_subscription_daily.paid_subscribers
+    alias: [退款率, 订阅退款率]
+  - name: Ad Revenue
+    description: 广告收入，口径为 sum(fact_ad_revenue_daily.ad_revenue)，单位美元。
+    relevant_columns:
+      - fact_ad_revenue_daily.ad_revenue
+    alias: [广告收入, 广告变现收入]
+  - name: ARPDAU
+    description: Average Revenue Per Daily Active User，口径为 (sum(subscription_revenue) + sum(ad_revenue)) / nullif(sum(dau), 0)。
+    relevant_columns:
+      - fact_subscription_daily.subscription_revenue
+      - fact_ad_revenue_daily.ad_revenue
+      - fact_user_activity_daily.dau
+    alias: [每活跃用户收入, 活跃用户平均收入]
+  - name: eCPM
+    description: 每千次广告展示收入，优先使用 avg(fact_ad_revenue_daily.ecpm)，也可按 sum(ad_revenue) * 1000 / nullif(sum(ad_impressions), 0) 计算。
+    relevant_columns:
+      - fact_ad_revenue_daily.ecpm
+      - fact_ad_revenue_daily.ad_revenue
+      - fact_ad_revenue_daily.ad_impressions
+    alias: [千次展示收入, 广告eCPM]
+  - name: Crash Rate
+    description: 崩溃率，口径为 sum(crash_sessions) / nullif(sum(total_sessions), 0)。
+    relevant_columns:
+      - fact_app_quality_daily.crash_sessions
+      - fact_app_quality_daily.total_sessions
+    alias: [崩溃率, crash rate]
+  - name: Average Startup Time
+    description: 平均启动耗时，口径为 avg(fact_app_quality_daily.avg_startup_ms)，单位毫秒。
+    relevant_columns:
+      - fact_app_quality_daily.avg_startup_ms
+    alias: [平均启动耗时, 启动耗时]
+  - name: Bad Review Rate
+    description: 差评率，口径为 sum(bad_review_count) / nullif(sum(review_count), 0)，差评指 1 星和 2 星评论。
+    relevant_columns:
+      - fact_store_review_daily.bad_review_count
+      - fact_store_review_daily.review_count
+    alias: [差评率, 低分评论占比, 负面评论率]
+  - name: Average Rating
+    description: 平均评分，口径为 sum(rating_sum) / nullif(sum(review_count), 0)。
+    relevant_columns:
+      - fact_store_review_daily.rating_sum
+      - fact_store_review_daily.review_count
+    alias: [平均评分, 应用商店评分, 评分]

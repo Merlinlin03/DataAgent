@@ -1,0 +1,26 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+/docker_windows/
+
+# Frontend dependencies and build output
+frontend/node_modules/
+frontend/dist/
+
+# Local IDE settings
+.idea/
+
+logs/
+
+# Local secrets and runtime state
+.env
+.run/
+*.tunnel.log
+SPEC.md
